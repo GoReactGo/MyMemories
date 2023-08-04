@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-
-import { useState, useRef } from 'react';
+import { auth, firestore, storage } from '../../firebase'; // Import Firebase settings
 import styles from './signupStyle.module.css';
 import userImg from '../../assets/signupUserImg.png';
 
@@ -14,18 +13,44 @@ const SignUp = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      // 필요한 경우 선택한 이미지 처리 (크기 조정, 유효성 검사 등)
-      setSelectedImage(file);
+  const handleImageChange = (e) => {
+    const selectedImage = e.target.files[0];
+    if (selectedImage) {
+      setImageUrl(URL.createObjectURL(selectedImage)); // Store the URL of the selected image
+      setImage(selectedImage); // Optionally store the selected image in the 'image' state if needed
     }
   };
+
 
   const handleCircleClick = () => {
     // 클릭 시 파일 선택 창 열기
     fileInputRef.current.click();
   };
+
+  const [name, setName] = useState('');
+  const [id, setId] = useState('');
+  const [pw, setPassword] = useState('');
+  const [image, setImage] = useState(null);
+  const [imageUrl, setImageUrl] = useState('');
+
+  const saveUserData = async () => {
+    try {
+
+      // Firestore에 사용자 문서 생성
+      const userDocRef = firestore.collection('users').doc(id);
+      await userDocRef.set({
+        name: name,
+        id: id,
+        imageUrl: imageUrl,
+        pw: pw,
+      });
+
+      console.log('회원가입 성공!');
+    } catch (error) {
+      console.error('회원가입 실패:', error);
+    }
+  };
+
 
   return (
     <div>
@@ -57,9 +82,9 @@ const SignUp = () => {
             justifyContent: 'center',
             alignItems: 'center',
             cursor: 'pointer'}} onClick={handleCircleClick}>
-            {selectedImage ? (
+            {image ? (
               <img
-                src={URL.createObjectURL(selectedImage)}
+                src={imageUrl}
                 alt="선택한 이미지"
                 style={{ width: '100%', height: '100%', borderRadius: '50%' }}
               />) : (<img style={{ width: '150px', height: '150px'}} src={userImg}></img>)}
@@ -69,13 +94,17 @@ const SignUp = () => {
             onChange={handleImageChange}
             style={{ display: 'none' }}
             ref={fileInputRef}/>
+
           <div id={styles.nameBox}style={{ marginTop: '10px', marginBottom: '20px' }}>
             <p>이름</p>
-            <input type='text' placeholder='실명을 입력해주세요.'></input>
+            <input type='text' placeholder='실명을 입력해주세요.' value={name}
+            onChange={(e) => setName(e.target.value)}></input>
           </div>
+
           <div id={styles.idBox}style={{ marginBottom: '20px' }}>
             <p>아이디</p>
-            <input type='text' placeholder='아이디를 입력해주세요.'></input>
+            <input type='text' placeholder='아이디를 입력해주세요.' value={id} 
+            onChange={(e)=>setId(e.target.value)}></input>
             <div className={styles.check}>
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 20 20" fill="none">
                 <circle cx="10" cy="10" r="10" fill="#95969D"/>
@@ -84,6 +113,7 @@ const SignUp = () => {
               <p>사용가능한 아이디입니다.</p>
             </div>
           </div>
+
           <div id={styles.pwBox}style={{ marginBottom: '20px' }}>
             <p>비밀번호</p>
             <input type='password' placeholder='비밀번호를 입력해주세요.'></input>
@@ -97,7 +127,8 @@ const SignUp = () => {
           </div>
           <div id={styles.pwCheckBox} style={{ marginBottom: '30px' }}>
             <p>비밀번호 확인</p>
-            <input type='password' placeholder='비밀번호를 입력해주세요.'></input>
+            <input type='password' placeholder='비밀번호를 입력해주세요.'value={pw}
+            onChange={(e) => setPassword(e.target.value)}></input>
             <div className={styles.check}>
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 20 20" fill="none">
                 <circle cx="10" cy="10" r="10" fill="#95969D"/>
@@ -106,7 +137,7 @@ const SignUp = () => {
               <p>비밀번호가 일치합니다.</p>
             </div>
           </div>
-          <button id={styles.signInBtn}>회원가입 하기</button>
+          <button onClick={saveUserData} id={styles.signInBtn}>회원가입 하기</button>
         </div>
       </div>
     </div> 
