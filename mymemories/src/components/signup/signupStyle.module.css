@@ -62,13 +62,14 @@ html, body {
 #signInBtn{
     background-color: transparent;
     border: none;
-    width: 10vw;
-    height: 4vh;
+    width: 13vw;
+    height: 6vh;
     font-size: 20px;
     font-weight: 700;
     line-height: normal;
     letter-spacing: 2.4px;
     cursor: pointer;
+
 }
 .check{
     display: flex;
