@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { auth, db, storage,doc,setDoc } from '../../firebase'; // Import Firebase settings
+import { auth, db, storage,doc,setDoc,getDoc } from '../../firebase'; // Import Firebase settings
 import styles from './signupStyle.module.css';
 import userImg from '../../assets/signupUserImg.png';
 
@@ -51,7 +51,15 @@ const SignUp = () => {
     }
   };
 
+  const [isIdAvailable, setIsIdAvailable] = useState(false);
 
+  const checkIdAvailability = async () => {
+    // user 컬렉션에서 아이디가 존재하는지 확인하는 로직
+    const userDocRef = doc(db, 'users', id);
+    const userDocSnapshot = await getDoc(userDocRef);
+    setIsIdAvailable(!userDocSnapshot.exists());
+  };
+  
   return (
     <div>
       <div id={styles.container}>
@@ -103,41 +111,51 @@ const SignUp = () => {
 
           <div id={styles.idBox}style={{ marginBottom: '20px' }}>
             <p>아이디</p>
-            <input type='text' placeholder='아이디를 입력해주세요.' value={id} 
-            onChange={(e)=>setId(e.target.value)}></input>
-            <div className={styles.check}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 20 20" fill="none">
-                <circle cx="10" cy="10" r="10" fill="#95969D"/>
-                <path d="M7.81818 12.3284L4.95455 9.8209L4 10.6567L7.81818 14L16 6.83582L15.0455 6L7.81818 12.3284Z" fill="#F6F7FB"/>
-              </svg>
-              <p>사용가능한 아이디입니다.</p>
-            </div>
+            <input
+              type='text'
+              placeholder='아이디를 입력하세요'
+              value={id}
+              onChange={(e) => {
+                setId(e.target.value);
+                setIsIdAvailable(false); // 아이디 입력이 변경되면 사용 가능 상태 초기화
+              }}
+              onBlur={checkIdAvailability} // 아이디 입력 필드를 벗어날 때, 아이디 존재 여부 확인
+            />
+           {isIdAvailable ? (
+              <div className={styles.check}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 20 20" fill="none">
+                  <circle cx="10" cy="10" r="10" fill="#1FB1F0" /> {/* 아이디 사용 가능 색깔 */}
+                  <path d="M7.81818 12.3284L4.95455 9.8209L4 10.6567L7.81818 14L16 6.83582L15.0455 6L7.81818 12.3284Z" fill="#F6F7FB" />
+                </svg>
+                <p style={{ color: '#1FB1F0' }}>사용 가능한 아이디입니다.</p> {/* 아이디 사용 가능 문구 */}
+              </div>
+            ) : null}
           </div>
 
           <div id={styles.pwBox}style={{ marginBottom: '20px' }}>
             <p>비밀번호</p>
             <input type='password' placeholder='비밀번호를 입력해주세요.'></input>
-            <div className={styles.check}>
+            {/* <div className={styles.check}>
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 20 20" fill="none">
                 <circle cx="10" cy="10" r="10" fill="#95969D"/>
                 <path d="M7.81818 12.3284L4.95455 9.8209L4 10.6567L7.81818 14L16 6.83582L15.0455 6L7.81818 12.3284Z" fill="#F6F7FB"/>
               </svg>
               <p>사용가능한 비밀번호입니다.</p>
-            </div>
+            </div> */}
           </div>
           <div id={styles.pwCheckBox} style={{ marginBottom: '30px' }}>
             <p>비밀번호 확인</p>
             <input type='password' placeholder='비밀번호를 입력해주세요.'value={pw}
             onChange={(e) => setPassword(e.target.value)}></input>
-            <div className={styles.check}>
+            {/* <div className={styles.check}>
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 20 20" fill="none">
                 <circle cx="10" cy="10" r="10" fill="#95969D"/>
                 <path d="M7.81818 12.3284L4.95455 9.8209L4 10.6567L7.81818 14L16 6.83582L15.0455 6L7.81818 12.3284Z" fill="#F6F7FB"/>
               </svg>
               <p>비밀번호가 일치합니다.</p>
-            </div>
+            </div> */}
           </div>
-          <button onClick={saveUserData} id={styles.signInBtn}>회원가입 하기</button>
+          <button onClick={saveUserData} id={styles.signInBtn} >회원가입 하기</button>
         </div>
       </div>
     </div> 

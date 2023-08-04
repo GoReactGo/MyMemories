@@ -33,6 +33,11 @@ const SignIn = () => {
       console.error('로그인 에러:', error);
     }
   };
+
+  const isFieldsNotEmpty = () => {
+    return id.trim() !== '' && pw.trim() !== '';
+  };
+
   return (
     <div>
       <div id={styles.container} >
@@ -61,7 +66,8 @@ const SignIn = () => {
             <p>비밀번호</p>
             <input type='password' placeholder='비밀번호를 입력하세요' value={pw} onChange={(e) => setPassword(e.target.value)} ></input>
           </div>
-          <button id={styles.signInBtn} onClick={handleLogin}>로그인 하기</button>
+          <button id={styles.signInBtn} onClick={handleLogin} style={{ backgroundColor: isFieldsNotEmpty() ? '#17181A' : '#FFFFFF' , color: isFieldsNotEmpty() ? '#FFFFFF' : '#95969D'}} 
+            disabled={!isFieldsNotEmpty()}>로그인 하기</button>
         </div>
       </div>
     </div> 
