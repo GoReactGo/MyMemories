@@ -1,11 +1,37 @@
 import React from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { db, doc,getDoc } from '../../firebase';
 import styles from './signInStyle.module.css';
 
 const SignIn = () => {
   const linkStyle = {
     color: '#1FB1F0', // Set the color you want for the links
     textDecoration: 'none', // Remove the underline
+  };
+
+  const [id, setId] = useState('');
+  const [pw, setPassword] = useState('');
+
+  const handleLogin = async () =>{
+    try{
+      const userDocRef = doc(db,'user',id);
+      const userDocSnapshot = await getDoc(userDocRef);
+
+      if (userDocSnapshot.exists()) {
+        const userData = userDocSnapshot.data();
+        if (userData.pw === pw) {
+          console.log('로그인 성공!');
+          // 여기에 로그인 성공 시 처리할 로직 추가
+        } else {
+          console.log('비밀번호가 일치하지 않습니다.');
+        }
+      } else {
+        console.log('해당 아이디의 사용자를 찾을 수 없습니다.');
+      }
+    } catch (error) {
+      console.error('로그인 에러:', error);
+    }
   };
   return (
     <div>
@@ -29,13 +55,13 @@ const SignIn = () => {
             letterSpacing: "2.4px"}}>로그인</p>
           <div id={styles.idBox}style={{ marginTop: '40px', marginBottom: '20px' }}>
             <p>아이디</p>
-            <input type='text' placeholder='아이디를 입력하세요'></input>
+            <input type='text' placeholder='아이디를 입력하세요' value={id} onChange={(e) => setId(e.target.value)}></input>
           </div>
           <div id={styles.pwBox} style={{ marginBottom: '50px' }}>
             <p>비밀번호</p>
-            <input type='password' placeholder='비밀번호를 입력하세요'></input>
+            <input type='password' placeholder='비밀번호를 입력하세요' value={pw} onChange={(e) => setPassword(e.target.value)} ></input>
           </div>
-          <button id={styles.signInBtn}>로그인 하기</button>
+          <button id={styles.signInBtn} onClick={handleLogin}>로그인 하기</button>
         </div>
       </div>
     </div> 

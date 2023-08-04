@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { auth, firestore, storage } from '../../firebase'; // Import Firebase settings
+import { auth, db, storage,doc,setDoc } from '../../firebase'; // Import Firebase settings
 import styles from './signupStyle.module.css';
 import userImg from '../../assets/signupUserImg.png';
 
@@ -37,8 +37,8 @@ const SignUp = () => {
     try {
 
       // Firestore에 사용자 문서 생성
-      const userDocRef = firestore.collection('users').doc(id);
-      await userDocRef.set({
+      const userDocRef = doc(db, 'user', id);
+      await setDoc(userDocRef, {
         name: name,
         id: id,
         imageUrl: imageUrl,
