@@ -1,49 +1,62 @@
 import React, { useState } from 'react';
 import styles from './calendar.module.css';
-import { weeksToDays } from 'date-fns';
+import CalendarModal from './calendarModal';
+import InviteModal from './InviteModal';
+
+const Calendar = () => {
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    //요일 표시
+
+    const [currentDate, setCurrentDate] = useState(new Date());
+    //현재 날짜 상태?
+
+    const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
+    //현재 달의 총 일수
+    
+    const getFirstDayOfWeek = (year, month) => new Date(year, month, 1).getDay();
+    //현재달의 첫번째 요일(0은 일요일 ~ 6은 토요일)
+
+    const handlePrevMonth = () => {
+      setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
+    }; //전달로 가는 버튼
+
+    const handleNextMonth = () => {
+      setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
+    }; //다음달로 가는 버튼
+
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+
+    const openModal = () => {
+      setModalIsOpen(true);
+    };
+
+    const closeModal = () => {
+      setModalIsOpen(false);
+    };
+
+    const handleAddFriend = (email) => {
+      // friendEmail을 처리하거나 서버로 전송하는 로직 구현
+      console.log('Added friend with email:', email);
+    };
 
 
-function Calendar() {
-  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  //요일 표시
+    const renderCalendar = () => {
+      const daysInMonth = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth());
+      const firstDayOfWeek = getFirstDayOfWeek(currentDate.getFullYear(), currentDate.getMonth());
 
-  const [currentDate, setCurrentDate] = useState(new Date());
-  //현재 날짜 상태?
+      const calendarDays = [];
 
-  const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
-  //현재 달의 총 일수
-  
-  const getFirstDayOfWeek = (year, month) => new Date(year, month, 1).getDay();
-  //현재달의 첫번째 요일(0은 일요일 ~ 6은 토요일)
+      //이전달의 빈 날짜 추가
+      for (let i = 0; i < firstDayOfWeek; i++) {
+        calendarDays.push(<div className={styles.emptyDay} key={`empty-${i}`}></div>);
+      }
+      //현재 달 날짜 추가
+      for (let day = 1; day <= daysInMonth; day++) {
+        calendarDays.push(<div className={styles.calendarDay} key={`day-${day}`}>{day}</div>);
+      }
 
-  
-  const handlePrevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
-  }; //전달로 가는 버튼
-
-  const handleNextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
-  }; //다음달로 가는 버튼
-
-
-
-  const renderCalendar = () => {
-    const daysInMonth = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth());
-    const firstDayOfWeek = getFirstDayOfWeek(currentDate.getFullYear(), currentDate.getMonth());
-
-    const calendarDays = [];
-
-    //이전달의 빈 날짜 추가
-    for (let i = 0; i < firstDayOfWeek; i++) {
-      calendarDays.push(<div className={styles.emptyDay} key={`empty-${i}`}></div>);
-    }
-    //현재 달 날짜 추가
-    for (let day = 1; day <= daysInMonth; day++) {
-      calendarDays.push(<div className={styles.calendarDay} key={`day-${day}`}>{day}</div>);
-    }
-
-    return calendarDays;
-  };
+      return calendarDays;
+    };
   
   return (
     <div className={styles.App}>
@@ -69,7 +82,9 @@ function Calendar() {
         </div>
         <div className={styles.optionBox}>
           <button className={styles.option}>사진추가</button>
-          <button className={styles.option}>친구id</button> 
+          <button className={styles.option} onClick={openModal}>친구 ID 추가</button>
+          <InviteModal isOpen={modalIsOpen} closeModal={closeModal} onAddFriend={handleAddFriend}>
+          </InviteModal>
           <button className={styles.option}>커스텀</button>
         </div>
         <div className={styles.daysOfWeek}>
