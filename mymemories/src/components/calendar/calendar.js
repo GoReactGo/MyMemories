@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styles from './calendar.module.css';
-import CalendarModal from './calendarModal';
 import InviteModal from './InviteModal';
+import CustomModal from './customModal';
 
 const Calendar = () => {
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -24,15 +24,25 @@ const Calendar = () => {
       setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
     }; //다음달로 가는 버튼
 
-    const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [inviteModalIsOpen, setInviteModalIsOpen] = useState(false);
+    const [customModalIsOpen, setCustomModalIsOpen] = useState(false);
 
-    const openModal = () => {
-      setModalIsOpen(true);
+    const openInviteModal = () => {
+        setInviteModalIsOpen(true);
     };
 
-    const closeModal = () => {
-      setModalIsOpen(false);
+    const closeInviteModal = () => {
+        setInviteModalIsOpen(false);
     };
+
+    const openCustomModal = () => {
+        setCustomModalIsOpen(true);
+    };
+
+    const closeCustomModal = () => {
+        setCustomModalIsOpen(false);
+    };
+
 
     const handleAddFriend = (email) => {
       // friendEmail을 처리하거나 서버로 전송하는 로직 구현
@@ -82,10 +92,10 @@ const Calendar = () => {
         </div>
         <div className={styles.optionBox}>
           <button className={styles.option}>사진추가</button>
-          <button className={styles.option} onClick={openModal}>친구 ID 추가</button>
-          <InviteModal isOpen={modalIsOpen} closeModal={closeModal} onAddFriend={handleAddFriend}>
-          </InviteModal>
-          <button className={styles.option}>커스텀</button>
+          <button className={styles.option} onClick={openInviteModal}>친구 ID 추가</button>
+          <InviteModal isOpen={inviteModalIsOpen} closeModal={closeInviteModal} onAddFriend={handleAddFriend} />
+          <button className={styles.option} onClick={openCustomModal}>커스텀</button>
+          <CustomModal isOpen={customModalIsOpen} closeModal={closeCustomModal} />
         </div>
         <div className={styles.daysOfWeek}>
           {daysOfWeek.map((day) => (

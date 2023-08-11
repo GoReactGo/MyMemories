@@ -193,7 +193,7 @@
   margin-top: 5px;
 }
 
-.userImage {
+.basicuserImage {
   width: 46px;
   height: 46px;
 }
@@ -241,4 +241,49 @@
 
 .inviteButton:active .inviteButtonText {
   color: #F6F7FB;
+}
+
+.userImage {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid #95969D;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.memberName {
+  color: #000;
+  font-family: 'Almarai';
+  font-size: 16px;
+  font-weight: 400;
+  word-wrap: break-word;
+}
+
+.memberEmail {
+  color: #95969D;
+  font-size: 16px;
+  font-family: 'Almarai';
+  font-weight: 400;
+  word-wrap: break-word;
+}
+
+.modalContent #title {
+  color: black;
+  font-size: 16px;
+  font-family: 'Almarai', sans-serif;
+  font-weight: 700;
+  word-wrap: break-word;
+}
+
+.customList p {
+  color: black;
+  font-size: 14px;
+  font-family: 'Almarai', sans-serif;
+  font-weight: 400;
+  word-wrap: break-word;
+  margin-right: 80px;
 }

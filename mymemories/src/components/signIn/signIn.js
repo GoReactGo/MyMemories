@@ -1,15 +1,16 @@
 import React from 'react';
 import { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, BrowserRouter as Redirect } from 'react-router-dom';
 import { db, doc,getDoc } from '../../firebase';
 import styles from './signInStyle.module.css';
+import { AuthProvider, useAuth } from '../../AuthContext'; // AuthContext 및 관련 훅 가져오기
 
 const SignIn = () => {
   const linkStyle = {
     color: '#1FB1F0', // Set the color you want for the links
     textDecoration: 'none', // Remove the underline
   };
-
+  const { user, login } = useAuth(); // useAuth 훅 사용
   const [id, setId] = useState('');
   const [pw, setPassword] = useState('');
 
@@ -22,7 +23,7 @@ const SignIn = () => {
         const userData = userDocSnapshot.data();
         if (userData.pw === pw) {
           console.log('로그인 성공!');
-          // 여기에 로그인 성공 시 처리할 로직 추가
+          login({ id, pw }); // useAuth 훅의 login 함수 호출
         } else {
           console.log('비밀번호가 일치하지 않습니다.');
         }
@@ -33,6 +34,10 @@ const SignIn = () => {
       console.error('로그인 에러:', error);
     }
   };
+
+  if (user) {
+    return <Redirect to="/" />;
+  }
 
   const isFieldsNotEmpty = () => {
     return id.trim() !== '' && pw.trim() !== '';

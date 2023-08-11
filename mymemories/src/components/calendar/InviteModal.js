@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Modal from 'react-modal';
-import styles from './calendar.module.css';
+import styles from './invite.module.css';
 import cancelButton from '../../assets/cancelButton.png';
 import UserImage from '../../assets/userImage.png';
 import { db } from '../../firebase';
@@ -11,14 +11,14 @@ Modal.setAppElement('#root'); // 모달의 루트 엘리먼트 지정
 const InviteModal = ({ isOpen, closeModal, onInviteFriend }) => {
     const [friendEmail, setFriendEmail] = useState('');
     const [isButtonClicked, setIsButtonClicked] = useState(false);
+    const [members, setMembers] = useState([]);
+    const memberCount = members.length - 1;
 
     const handleInviteFriend = () => {
         // friendEmail을 처리하거나 서버로 전송하는 로직 구현
         setIsButtonClicked(true);
         setFriendEmail('');
     };
-
-    const [members, setMembers] = useState([]);
 
     useEffect(() => {
         const fetchMembers = async () => {
@@ -47,7 +47,7 @@ const InviteModal = ({ isOpen, closeModal, onInviteFriend }) => {
                     <img src={cancelButton} alt="취소" /></button>
                 </div>
                 <div className={styles.inviteContainer}>
-                    <img src={UserImage} alt="이미지" className={styles.userImage} />
+                    <img src={UserImage} alt="이미지" className={styles.basicuserImage} />
                     <input
                     type="email"
                     value={friendEmail}
@@ -62,11 +62,18 @@ const InviteModal = ({ isOpen, closeModal, onInviteFriend }) => {
                 <div className={styles.memberList}>
                 {members.map(member => (
                     <div key={member.id}>
+                        <div className={styles.userImage}>
                         <img src={member.imageUrl} alt="Member" />
-                        <p>{member.name}</p>
-                        <p>{member.email}</p>
+                        </div>
+                        <p className={styles.memberName}>{member.name}</p>
+                        <p className={styles.memberEmail}>{member.email}</p>
                     </div>
                 ))}
+                </div>
+                <div>
+                    <p>
+                        <span style={{ whiteSpace: 'nowrap' }}>{`님 외 ${memberCount}명이 참여 중인 메모리입니다`}</span>
+                    </p>
                 </div>
             </div>
         </Modal>
