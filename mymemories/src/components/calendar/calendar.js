@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../firebase'; // 앞서 생성한 Firebase 초기화 파일 경로
 import styles from './calendar.module.css';
 import InviteModal from './InviteModal';
 import CustomModal from './customModal';
@@ -24,23 +26,29 @@ const Calendar = () => {
       setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
     }; //다음달로 가는 버튼
 
+    // 친구 초대 & 커스텀 모달
     const [inviteModalIsOpen, setInviteModalIsOpen] = useState(false);
     const [customModalIsOpen, setCustomModalIsOpen] = useState(false);
+    const [isButtonHighlighted, setIsButtonHighlighted] = useState(false); // 버튼 하이라이트 상태
 
     const openInviteModal = () => {
         setInviteModalIsOpen(true);
+        setIsButtonHighlighted(true); 
     };
 
     const closeInviteModal = () => {
         setInviteModalIsOpen(false);
+        setIsButtonHighlighted(false);
     };
 
     const openCustomModal = () => {
         setCustomModalIsOpen(true);
+        setIsButtonHighlighted(true); 
     };
 
     const closeCustomModal = () => {
         setCustomModalIsOpen(false);
+        setIsButtonHighlighted(false);
     };
 
 
@@ -55,13 +63,36 @@ const Calendar = () => {
       setSelectedColor(color);
     };
 
+    // 로컬 스토리지에서 배경색 가져오기
     useEffect(() => {
-      // 로컬 스토리지에서 배경색 가져오기
       const storedColor = localStorage.getItem('selectedColor');
       if (storedColor) {
         setSelectedColor(storedColor);
         document.body.style.backgroundColor = storedColor; // 전체 화면 배경에 색상 적용
       }
+    }, []);
+
+    // 공유 캘린더 내용 가져오기
+    const [sharedCalendars, setSharedCalendars] = useState([]);
+
+    useEffect(() => {
+      const fetchSharedCalendars = async () => {
+        try {
+          const calendarsRef = collection(db, 'sharedCalendars');
+          const querySnapshot = await getDocs(calendarsRef);
+  
+          const sharedCalendarsData = [];
+          querySnapshot.forEach((doc) => {
+            sharedCalendarsData.push({ id: doc.id, ...doc.data() });
+          });
+  
+          setSharedCalendars(sharedCalendarsData);
+        } catch (error) {
+          console.error('Error fetching shared calendars:', error);
+        }
+      };
+  
+      fetchSharedCalendars();
     }, []);
 
     const renderCalendar = () => {
@@ -89,12 +120,12 @@ const Calendar = () => {
         <p className={styles.profile}>엠엠님|로그아웃</p>
       </div>
       <div className={styles.calendarList}>
-          <button className={styles.calendarItem}>공유 캘린더 1</button>
-          <button className={styles.calendarItem}>공유 캘린더 2</button>
-          <button className={styles.calendarItem}>공유 캘린더 3</button>
-          <button className={styles.calendarItem}>공유 캘린더 4</button>
-          <button className={styles.calendarItem}>한성 19학번 추억들</button>
-      </div>
+      {sharedCalendars.map((calendar) => (
+        <button key={calendar.id} className={styles.calendarItem}>
+          {calendar.name}
+        </button>
+      ))}
+    </div>
       <div className={styles.calendar}>
         <div className={styles.header}>
           <button onClick={handlePrevMonth}><h1>&lt;</h1></button>
@@ -106,10 +137,10 @@ const Calendar = () => {
         </div>
       <div className={styles.optionBox}>
         <button className={styles.option}>사진추가</button>
-        <button className={styles.option} onClick={openInviteModal}>
+        <button className={isButtonHighlighted ? 'highlightedButton' : 'option'} onClick={openInviteModal}>
           친구 ID 추가
         </button>
-        <button className={styles.option} onClick={openCustomModal}>
+        <button className={isButtonHighlighted ? 'highlightedButton' : 'option'} onClick={openCustomModal}>
           커스텀
         </button>
       </div>

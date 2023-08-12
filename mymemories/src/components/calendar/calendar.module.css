@@ -45,14 +45,36 @@
     display:flex;
     flex-direction: row-reverse;
     margin-bottom:2em;
+    margin-right: 1em;
   }
-  .optionBox button{
-    border:none;
-    background-color: white;
+  .optionBox button {
+    border: none;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    display: inline-flex;
+  }  
+  .optionBoxhighlightedButton {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    background: #17181A;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    display: inline-flex;
   }
-  .option{
-    margin-left:1em;
-    margin-right:2em;
+  .optionBox highlightedButtonText {
+    color: #F6F7FB;
+    font-size: 16px;
+    font-family: 'Almarai';
+    font-weight: 400;
+    word-wrap: break-word;
   }
   .calendar {
     max-width: 100%;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Modal from 'react-modal';
 import styles from './custom.module.css';
 import cancelButton from '../../assets/cancelButton.png';
@@ -15,6 +15,7 @@ Modal.setAppElement('#root'); // 모달의 루트 엘리먼트 지정
 
 const CustomModal = ({ isOpen, closeModal, onColorSelect }) => {
     const [selectedColor, setSelectedColor] = useState('');
+    const modalRef = useRef(null); // Ref 생성
 
     const handleColorClick = (color) => {
       setSelectedColor(color);
@@ -33,13 +34,29 @@ const CustomModal = ({ isOpen, closeModal, onColorSelect }) => {
           setSelectedColor(savedColor);
           document.body.style.backgroundColor = savedColor;
         }
+
+        // 컴포넌트가 마운트되었을 때 이벤트 리스너를 추가
+        document.addEventListener('mousedown', handleClickOutside);
+
+        // 컴포넌트가 언마운트될 때 이벤트 리스너를 제거
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
       }, []);
+
+    const handleClickOutside = (event) => {
+    // 모달 바깥 영역을 클릭하고 모달 창이 열려 있는 경우에만 모달을 닫음
+    if (modalRef.current && !modalRef.current.contains(event.target)) {
+        closeModal();
+    }
+    };
       
     
     return (
         <Modal isOpen={isOpen} onRequestClose={closeModal}
         className={styles.modalContainer} 
         overlayClassName={styles.modalOverlay}>
+            <div ref={modalRef}>
             <div className={styles.modalContent}>
                 <div className={styles.header}>
                     <p>커스텀하기</p>
@@ -72,6 +89,7 @@ const CustomModal = ({ isOpen, closeModal, onColorSelect }) => {
                         <img src={white} alt="하양" />
                     </button>
                 </div>
+            </div>
             </div>
         </Modal>
       );
