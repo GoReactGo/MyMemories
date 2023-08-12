@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './calendar.module.css';
 import InviteModal from './InviteModal';
 import CustomModal from './customModal';
@@ -49,6 +49,20 @@ const Calendar = () => {
       console.log('Added friend with email:', email);
     };
 
+    const [selectedColor, setSelectedColor] = useState('');
+
+    const handleColorSelect = (color) => {
+      setSelectedColor(color);
+    };
+
+    useEffect(() => {
+      // 로컬 스토리지에서 배경색 가져오기
+      const storedColor = localStorage.getItem('selectedColor');
+      if (storedColor) {
+        setSelectedColor(storedColor);
+        document.body.style.backgroundColor = storedColor; // 전체 화면 배경에 색상 적용
+      }
+    }, []);
 
     const renderCalendar = () => {
       const daysInMonth = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth());
@@ -58,11 +72,11 @@ const Calendar = () => {
 
       //이전달의 빈 날짜 추가
       for (let i = 0; i < firstDayOfWeek; i++) {
-        calendarDays.push(<div className={styles.emptyDay} key={`empty-${i}`}></div>);
+        calendarDays.push(<div className={styles.emptyDay} style={{ backgroundColor: 'white' }} key={`empty-${i}`}></div>);
       }
       //현재 달 날짜 추가
       for (let day = 1; day <= daysInMonth; day++) {
-        calendarDays.push(<div className={styles.calendarDay} key={`day-${day}`}>{day}</div>);
+        calendarDays.push(<div className={styles.calendarDay} style={{ backgroundColor: 'white' }} key={`day-${day}`}>{day}</div>);
       }
 
       return calendarDays;
@@ -90,13 +104,21 @@ const Calendar = () => {
           </h1>
           <button onClick={handleNextMonth}><h1>&gt;</h1></button>
         </div>
-        <div className={styles.optionBox}>
-          <button className={styles.option}>사진추가</button>
-          <button className={styles.option} onClick={openInviteModal}>친구 ID 추가</button>
-          <InviteModal isOpen={inviteModalIsOpen} closeModal={closeInviteModal} onAddFriend={handleAddFriend} />
-          <button className={styles.option} onClick={openCustomModal}>커스텀</button>
-          <CustomModal isOpen={customModalIsOpen} closeModal={closeCustomModal} />
-        </div>
+      <div className={styles.optionBox}>
+        <button className={styles.option}>사진추가</button>
+        <button className={styles.option} onClick={openInviteModal}>
+          친구 ID 추가
+        </button>
+        <button className={styles.option} onClick={openCustomModal}>
+          커스텀
+        </button>
+      </div>
+      {inviteModalIsOpen && (
+        <InviteModal isOpen={inviteModalIsOpen} closeModal={closeInviteModal} />
+      )}
+      {customModalIsOpen && (
+        <CustomModal isOpen={customModalIsOpen} closeModal={closeCustomModal} onColorSelect={handleColorSelect}/>
+      )}
         <div className={styles.daysOfWeek}>
           {daysOfWeek.map((day) => (
             <div key={day}>{day}</div>
