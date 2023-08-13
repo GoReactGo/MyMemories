@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db, storage, doc, setDoc, getDoc } from '../../firebase'; // Import Firebase settings
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import styles from './signupStyle.module.css';
 import userImg from '../../assets/signupUserImg.png';
 
@@ -13,11 +15,22 @@ const SignUp = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const selectedImage = e.target.files[0];
     if (selectedImage) {
-      setImageUrl(URL.createObjectURL(selectedImage)); // Store the URL of the selected image
-      setImage(selectedImage); // Optionally store the selected image in the 'image' state if needed
+      try {
+        const storageRef = ref(storage, 'images/' + selectedImage.name);
+        await uploadBytes(storageRef, selectedImage);
+
+        const imageUrl = await getDownloadURL(storageRef);
+
+        setSelectedImage(imageUrl);
+        setImageUrl(imageUrl);
+        console.log('이미지 URL:', imageUrl); // 이미지 URL을 콘솔에 출력
+        
+      } catch (error) {
+        console.error('이미지 업로드 에러:', error);
+      }
     }
   };
 
@@ -34,7 +47,8 @@ const SignUp = () => {
 
   const saveUserData = async () => {
     try {
-      // Firestore에 사용자 문서 생성
+      const userCredential = await createUserWithEmailAndPassword(auth, id, pw);
+      const user = userCredential.user;
       const userDocRef = doc(db, 'user', id);
       await setDoc(userDocRef, {
         name: name,
@@ -42,10 +56,9 @@ const SignUp = () => {
         imageUrl: imageUrl,
         pw: pw,
       });
-
-      console.log('회원가입 성공!');
+      console.log('회원가입 성공:', user);
     } catch (error) {
-      console.error('회원가입 실패:', error);
+      console.error('회원가입 에러:', error);
     }
   };
 
@@ -114,7 +127,7 @@ const SignUp = () => {
             alignItems: 'center',
             cursor: 'pointer'
           }} onClick={handleCircleClick}>
-            {image ? (
+            {selectedImage ? (
               <img
                 src={imageUrl}
                 alt="선택한 이미지"

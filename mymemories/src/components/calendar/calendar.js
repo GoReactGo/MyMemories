@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase'; // 앞서 생성한 Firebase 초기화 파일 경로
+import { useAuth } from '../../AuthContext';
+import { useNavigate } from 'react-router-dom';
 import styles from './calendar.module.css';
 import InviteModal from './InviteModal';
 import CustomModal from './customModal';
 
 const Calendar = () => {
+    const { user, logout } = useAuth(); // 로그인된 사용자 정보와 logout 함수 불러오기 위함
+    console.log('User:', user);
+
+    const navigate = useNavigate();
+
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     //요일 표시
 
@@ -51,7 +58,7 @@ const Calendar = () => {
         setIsButtonHighlighted(false);
     };
 
-
+    // 친구 추가
     const handleAddFriend = (email) => {
       // friendEmail을 처리하거나 서버로 전송하는 로직 구현
       console.log('Added friend with email:', email);
@@ -93,7 +100,25 @@ const Calendar = () => {
       };
   
       fetchSharedCalendars();
-    }, []);
+    }, [db]);
+
+    if (!user) {
+      navigate('/signIn');
+      return null;
+    }
+
+    // 로그아웃 처리 함수
+    const handleLogout = async () => {
+      try {
+        await logout(); // 로그아웃 실행
+        handleColorSelect(''); // 배경색 초기화
+        document.body.style.backgroundColor = ''; // 전체 화면 배경 초기화
+        navigate('/signIn');
+        return null;
+      } catch (error) {
+        console.error('로그아웃 에러:', error);
+      }
+    };
 
     const renderCalendar = () => {
       const daysInMonth = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth());
@@ -117,7 +142,10 @@ const Calendar = () => {
     <div className={styles.App}>
       <div className={styles.topBox}>
         <p className={styles.projectName}>MY MEMORIES</p>
-        <p className={styles.profile}>엠엠님|로그아웃</p>
+        {user.imageUrl && <img className={styles.profileImage} src={user.imageUrl} alt="프로필 이미지" />}
+        <p className={styles.profile}>
+          <span className={styles.profileName}>{user.name}</span>님  |  <span onClick={handleLogout} className={styles.logout}>로그아웃</span>
+        </p>
       </div>
       <div className={styles.calendarList}>
       {sharedCalendars.map((calendar) => (

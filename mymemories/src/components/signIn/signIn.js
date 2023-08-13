@@ -1,9 +1,10 @@
 import React from 'react';
 import { useState, useRef } from 'react';
-import { Link, BrowserRouter as Redirect } from 'react-router-dom';
-import { db, doc,getDoc } from '../../firebase';
+import { Link, useNavigate } from 'react-router-dom';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { useAuth } from '../../AuthContext'; // AuthContext 및 관련 훅 가져오기
+import { db, doc, getDoc, getFirestore } from '../../firebase';
 import styles from './signInStyle.module.css';
-import { AuthProvider, useAuth } from '../../AuthContext'; // AuthContext 및 관련 훅 가져오기
 
 const SignIn = () => {
   const linkStyle = {
@@ -13,17 +14,28 @@ const SignIn = () => {
   const { user, login } = useAuth(); // useAuth 훅 사용
   const [id, setId] = useState('');
   const [pw, setPassword] = useState('');
+  const navigate = useNavigate(); // useNavigate 초기화
+  const auth = getAuth();
 
-  const handleLogin = async () =>{
-    try{
-      const userDocRef = doc(db,'user',id);
+  const handleLogin = async () => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, id, pw);
+      const user = userCredential.user;
+      const userDocRef = doc(db, 'user', id);
       const userDocSnapshot = await getDoc(userDocRef);
 
       if (userDocSnapshot.exists()) {
         const userData = userDocSnapshot.data();
         if (userData.pw === pw) {
           console.log('로그인 성공!');
-          login({ id, pw }); // useAuth 훅의 login 함수 호출
+          const userDataForContext = {
+            id: user.email, // 사용자 이메일
+            pw: user.pw,
+            name: userData.name, // 사용자 이름
+            imageUrl: userData.imageUrl, // 사용자 이미지 URL
+          };
+          login(userDataForContext); // useAuth 훅의 login 함수 호출
+          navigate('/'); // 로그인 상태이면 메인 페이지로 리다이렉트
         } else {
           console.log('비밀번호가 일치하지 않습니다.');
         }
@@ -34,10 +46,6 @@ const SignIn = () => {
       console.error('로그인 에러:', error);
     }
   };
-
-  if (user) {
-    return <Redirect to="/" />;
-  }
 
   const isFieldsNotEmpty = () => {
     return id.trim() !== '' && pw.trim() !== '';
