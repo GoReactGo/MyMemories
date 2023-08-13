@@ -103,6 +103,7 @@ const Calendar = () => {
     }, [db]);
 
     if (!user) {
+      document.body.style.backgroundColor = ''; // 전체 화면 배경 초기화
       navigate('/signIn');
       return null;
     }
