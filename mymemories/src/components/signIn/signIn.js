@@ -72,8 +72,8 @@ const SignIn = () => {
             lineHeight: "normal",
             letterSpacing: "2.4px"}}>로그인</p>
           <div id={styles.idBox}style={{ marginTop: '40px', marginBottom: '20px' }}>
-            <p>아이디</p>
-            <input type='text' placeholder='아이디를 입력하세요' value={id} onChange={(e) => setId(e.target.value)}></input>
+            <p>이메일</p>
+            <input type='text' placeholder='이메일을 입력하세요' value={id} onChange={(e) => setId(e.target.value)}></input>
           </div>
           <div id={styles.pwBox} style={{ marginBottom: '50px' }}>
             <p>비밀번호</p>

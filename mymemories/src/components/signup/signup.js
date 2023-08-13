@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db, storage, doc, setDoc, getDoc } from '../../firebase'; // Import Firebase settings
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -14,6 +14,7 @@ const SignUp = () => {
 
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
+  const navigate = useNavigate();
 
   const handleImageChange = async (e) => {
     const selectedImage = e.target.files[0];
@@ -57,6 +58,7 @@ const SignUp = () => {
         pw: pw,
       });
       console.log('회원가입 성공:', user);
+      navigate('/');
     } catch (error) {
       console.error('회원가입 에러:', error);
     }
@@ -153,7 +155,7 @@ const SignUp = () => {
             <p>아이디</p>
             <input
               type='text'
-              placeholder='아이디를 입력하세요'
+              placeholder='이메일을 입력하세요'
               value={id}
               onChange={(e) => {
                 const newId = e.target.value;
@@ -175,7 +177,7 @@ const SignUp = () => {
                   <circle cx="10" cy="10" r="10" fill="#1FB1F0" /> {/* 아이디 사용 가능 색깔 */}
                   <path d="M7.81818 12.3284L4.95455 9.8209L4 10.6567L7.81818 14L16 6.83582L15.0455 6L7.81818 12.3284Z" fill="#F6F7FB" />
                 </svg>
-                <p style={{ color: '#1FB1F0' }}>사용 가능한 아이디입니다.</p> {/* 아이디 사용 가능 문구 */}
+                <p style={{ color: '#1FB1F0' }}>사용 가능한 이메일입니다.</p> {/* 아이디 사용 가능 문구 */}
               </div>
             ) : 
             isExistingId ? (
@@ -184,7 +186,7 @@ const SignUp = () => {
                   <circle cx="10" cy="10" r="10" fill="red" /> {/* 아이디 사용 가능 색깔 */}
                   <path d="M7.81818 12.3284L4.95455 9.8209L4 10.6567L7.81818 14L16 6.83582L15.0455 6L7.81818 12.3284Z" fill="#F6F7FB" />
                 </svg>
-                <p style={{ color: 'red' }}>사용 불가능한 아이디입니다.</p> {/* 아이디 사용 가능 문구 */}
+                <p style={{ color: 'red' }}>사용 불가능한 이메일입니다.</p> {/* 아이디 사용 가능 문구 */}
               </div>
             ) :
             null
