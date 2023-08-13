@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import styles from './calendar.module.css';
 import axios from 'axios';
-import Sunny from '../../assets/weatherimg/Sunny.png';
-import Cloudy from '../../assets/weatherimg/Cloudy.png';
-import Snow from '../../assets/weatherimg/Snow.png';
-import Rainy from '../../assets/weatherimg/Rainy.png';
+import {
+  Sunny, Cloudy, Rainy, Snow
+} from '../../assets/weatherimg/';
 
 
-const apiKey = '21436169b59984e5c7012ce01f551d90'; // OpenWeatherMap에서 발급받은 API 키로 대체
+const apiKey = '4d445d9cd6aab6eef5984279bf27548f'; // OpenWeatherMap에서 발급받은 API 키로 대체
 const apiBaseUrl = 'https://api.openweathermap.org/data/2.5/forecast';
 const seoulLat = 37.5665;
 const seoulLon = 126.9780;
-const forecastDays = 56; // 가져올 예보 일 수
+const forecastDays = 16; // 가져올 예보 일 수
 
 function Calendar() {
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -39,8 +38,8 @@ function Calendar() {
 
   const getWeather = async () => {
     try {
-      const response = await axios.get(`${apiBaseUrl}?lat=${seoulLat}&lon=${seoulLon}&cnt=${forecastDays}&appid=${apiKey}&units=metric`); // API 엔드포인트 변경
-      const data = await response.data;
+      const response = await fetch(`${apiBaseUrl}?lat=${seoulLat}&lon=${seoulLon}&cnt=${forecastDays}&appid=${apiKey}&units=metric`); // URL 변경
+      const data = await response.json();
       //console.log('API Response:', data); // API 응답 데이터 확인
       setWeatherData(data.list); // 일일 예보 데이터 리스트를 저장
     } catch (error) {
@@ -52,19 +51,21 @@ function Calendar() {
     getWeather();
   }, []);
 
-  const selectIcon = (iconId) => {
+  const selectIcon = (iconId, dayWeather) => {
+    console.log('Selected Icon ID:', iconId); // 선택된 아이콘 아이디를 콘솔에 출력
+    
     if (iconId >= 800 && iconId < 900) {
       // 맑음
-      return <img src={Sunny} alt="Sunny" style={{ width: '6rem', color: 'red' }} />;
+      return <Sunny size="6rem" color="red" />;
     } else if (iconId >= 600 && iconId < 700) {
       // 눈
-      return <img src={Snow} alt="Snow" style={{ width: '6rem', color: 'white' }} />;
+      return <Snow size="6rem" color="white" />;
     } else if (iconId >= 500 && iconId < 600) {
       // 비
-      return <img src={Rainy} alt="Rainy" style={{ width: '6rem', color: 'navy' }} />;
+      return <Rainy size="6rem" color="navy" />;
     } else {
       // 구름
-      return <img src={Cloudy} alt="Cloudy" style={{ width: '6rem', color: 'white' }} />;
+      return <Cloudy size="6rem" color="white" />;
     }
   };
 
@@ -82,50 +83,31 @@ function Calendar() {
       calendarDays.push(<div className={styles.emptyDay} key={`empty-${i}`}></div>);
     }
     
-     // 현재 달 날짜 추가
-     for (let day = 1; day <= daysInMonth; day++) {
+    // 현재 달 날짜 추가
+    for (let day = 1; day <= daysInMonth; day++) {
       const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
       const year = targetDate.getFullYear();
       const month = String(targetDate.getMonth() + 1).padStart(2, '0');
       const dayOfMonth = String(day).padStart(2, '0');
       const dateKey = `${year}-${month}-${dayOfMonth}`;
-      
-      const dayWeather = weatherData.filter(item => item.dt_txt.startsWith(dateKey));
-      let hasCloudy = false;
-      let hasRainy = false;
-      let hasSnow = false;
-      let hasSunny = false;
+      //console.log('Date Key:', dateKey);
+      //console.log('dayWeather:', dayWeather);
 
-      for (const hourWeather of dayWeather) {
-        const iconId = hourWeather.weather[0].id;
-        if (iconId >= 800 && iconId < 900) {
-          hasSunny = true;
-        } else if (iconId >= 600 && iconId < 700) {
-          hasSnow = true;
-        } else if (iconId >= 500 && iconId < 600) {
-          hasRainy = true;
-        } else {
-          hasCloudy = true;
-        }
-      }
-
-      let weatherIcon = null;
-      if (hasRainy) {
-        weatherIcon = selectIcon(500); // Rainy
-      } else if (hasSnow) {
-        weatherIcon = selectIcon(600); // Snow
-      } else if (hasCloudy) {
-        weatherIcon = selectIcon(801); // Cloudy (주로 부분적 구름)
-      } else if (hasSunny) {
-        weatherIcon = selectIcon(800); // Sunny
-      }
+      const dayWeather = weatherData.find(item => item.dt_txt.startsWith(dateKey));      let weatherIcon = null;
+      console.log('Date Key:', dateKey, 'dayWeather:', dayWeather);
       
+      if (dayWeather && dayWeather.weather[0]) {
+        const iconId = dayWeather.weather[0].id;
+        weatherIcon = selectIcon(iconId, dayWeather); // dayWeather를 전달
+      } else {
+        // 예보 데이터가 없는 경우에도 빈 아이콘을 추가
+        weatherIcon = selectIcon(-1, dayWeather); // -1을 특별한 아이콘으로 처리할 수 있도록 해야합니다.
+      }
+    
       calendarDays.push(
         <div className={styles.calendarDay} key={`day-${day}`}>
           {day}
-          <div className={styles.icon}>
-            {weatherIcon ? weatherIcon : null} {/* 날씨 정보가 없는 경우에는 null */}
-          </div>
+          <div className={styles.icon}>{weatherIcon}</div>
         </div>
       );
     }
