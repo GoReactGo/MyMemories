@@ -143,10 +143,14 @@ const Calendar = () => {
     <div className={styles.App}>
       <div className={styles.topBox}>
         <p className={styles.projectName} onClick={() => navigate('/')}>MY MEMORIES</p>
+       
+        <div className={styles.rightTop}>
         {user.imageUrl && <img className={styles.profileImage} src={user.imageUrl} alt="프로필 이미지" />}
         <p className={styles.profile}>
           <span className={styles.profileName}>{user.name}</span>님  |  <span onClick={handleLogout} className={styles.logout}>로그아웃</span>
         </p>
+        </div>
+        
       </div>
       <div className={styles.calendarList}>
       {sharedCalendars.map((calendar) => (
