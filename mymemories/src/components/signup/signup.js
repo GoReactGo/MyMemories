@@ -152,7 +152,7 @@ const SignUp = () => {
           </div>
 
           <div id={styles.idBox} style={{ marginBottom: '20px' }}>
-            <p>아이디</p>
+            <p>이메일</p>
             <input
               type='text'
               placeholder='이메일을 입력하세요'

@@ -19,6 +19,17 @@ const seoulLon = 126.9780;
 const forecastDays = 56; // 가져올 예보 일 수
 
 const Calendar = () => {
+    const getWeather = async () => {
+      try {
+        const response = await axios.get(`${apiBaseUrl}?lat=${seoulLat}&lon=${seoulLon}&cnt=${forecastDays}&appid=${apiKey}&units=metric`); // API 엔드포인트 변경
+        const data = await response.data;
+        //console.log('API Response:', data); // API 응답 데이터 확인
+        setWeatherData(data.list); // 일일 예보 데이터 리스트를 저장
+      } catch (error) {
+        console.error('Weather API Error:', error);
+      }
+    };
+
     useEffect(() => {
       getWeather();
     }, []);
@@ -140,19 +151,6 @@ const Calendar = () => {
         console.error('로그아웃 에러:', error);
       }
     };
-
-    const getWeather = async () => {
-      try {
-        const response = await axios.get(`${apiBaseUrl}?lat=${seoulLat}&lon=${seoulLon}&cnt=${forecastDays}&appid=${apiKey}&units=metric`); // API 엔드포인트 변경
-        const data = await response.data;
-        //console.log('API Response:', data); // API 응답 데이터 확인
-        setWeatherData(data.list); // 일일 예보 데이터 리스트를 저장
-      } catch (error) {
-        console.error('Weather API Error:', error);
-      }
-    };
-
-
 
     const selectIcon = (iconId) => {
       if (iconId >= 800 && iconId < 900) {
