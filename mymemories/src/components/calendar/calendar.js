@@ -19,6 +19,10 @@ const seoulLon = 126.9780;
 const forecastDays = 56; // 가져올 예보 일 수
 
 const Calendar = () => {
+    useEffect(() => {
+      getWeather();
+    }, []);
+
     const { user, logout } = useAuth(); // 로그인된 사용자 정보와 logout 함수 불러오기 위함
     console.log('User:', user);
 
@@ -148,9 +152,7 @@ const Calendar = () => {
       }
     };
 
-    useEffect(() => {
-      getWeather();
-    }, []);
+
 
     const selectIcon = (iconId) => {
       if (iconId >= 800 && iconId < 900) {
