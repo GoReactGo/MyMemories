@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import styles from './calendar.module.css';
 import InviteModal from './InviteModal';
 import CustomModal from './customModal';
-import styles from './calendar.module.css';
 import axios from 'axios';
 import Sunny from '../../assets/weatherimg/Sunny.png';
 import Cloudy from '../../assets/weatherimg/Cloudy.png';
@@ -93,31 +92,31 @@ const Calendar = () => {
     }, []);
 
     // 공유 캘린더 내용 가져오기
-    const [sharedCalendars, setSharedCalendars] = useState([]);
+    // const [sharedCalendars, setSharedCalendars] = useState([]);
 
-    useEffect(() => {
-      const fetchSharedCalendars = async () => {
-        try {
-          const calendarsRef = collection(db, 'sharedCalendars');
-          const querySnapshot = await getDocs(calendarsRef);
-    const [weatherData, setWeatherData] = useState([]);
+    // useEffect(() => {
+    //   const fetchSharedCalendars = async () => {
+    //     try {
+    //       const calendarsRef = collection(db, 'sharedCalendars');
+    //       const querySnapshot = await getDocs(calendarsRef);
+    // const [weatherData, setWeatherData] = useState([]);
 
-    const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
-    //현재 달의 총 일수
+    // const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
+    // //현재 달의 총 일수
     
-            const sharedCalendarsData = [];
-            querySnapshot.forEach((doc) => {
-              sharedCalendarsData.push({ id: doc.id, ...doc.data() });
-            });
+    //         const sharedCalendarsData = [];
+    //         querySnapshot.forEach((doc) => {
+    //           sharedCalendarsData.push({ id: doc.id, ...doc.data() });
+    //         });
     
-            setSharedCalendars(sharedCalendarsData);
-          } catch (error) {
-            console.error('Error fetching shared calendars:', error);
-          }
-        };
+    //         setSharedCalendars(sharedCalendarsData);
+    //       } catch (error) {
+    //         console.error('Error fetching shared calendars:', error);
+    //       }
+    //     };
     
-        fetchSharedCalendars();
-      }, [db]);
+    //     fetchSharedCalendars();
+    //   }, [db]);
 
     if (!user) {
       document.body.style.backgroundColor = ''; // 전체 화면 배경 초기화
@@ -249,11 +248,11 @@ const Calendar = () => {
         
       </div>
       <div className={styles.calendarList}>
-      {sharedCalendars.map((calendar) => (
+      {/* {sharedCalendars.map((calendar) => (
         <button key={calendar.id} className={styles.calendarItem}>
           {calendar.name}
         </button>
-      ))}
+      ))} */}
     </div>
       <div className={styles.calendar}>
         <div className={styles.header}>
