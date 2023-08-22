@@ -12,28 +12,38 @@ const SignIn = () => {
     textDecoration: 'none', // Remove the underline
   };
   const { user, login } = useAuth(); // useAuth 훅 사용
-  const [id, setId] = useState('');
+  const [email, setEmail] = useState('');
   const [pw, setPassword] = useState('');
   const navigate = useNavigate(); // useNavigate 초기화
   const auth = getAuth();
 
-  const handleLogin = async () => {
+  const handleLoginClick = () => {
+    handleLogin(email, pw);
+  };
+
+  const handleLogin = async (email, pw) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, id, pw);
+      const userCredential = await signInWithEmailAndPassword(auth, email, pw);
       const user = userCredential.user;
-      const userDocRef = doc(db, 'user', id);
+
+      // Firestore에서 사용자 데이터 가져오기
+      const userDocRef = doc(db, 'user', email);
       const userDocSnapshot = await getDoc(userDocRef);
+      console.log(userDocSnapshot);
 
       if (userDocSnapshot.exists()) {
         const userData = userDocSnapshot.data();
         if (userData.pw === pw) {
           console.log('로그인 성공!');
           const userDataForContext = {
-            id: user.email, // 사용자 이메일
-            pw: user.pw,
+            email: userData.email, // 사용자 이메일
             name: userData.name, // 사용자 이름
             imageUrl: userData.imageUrl, // 사용자 이미지 URL
           };
+
+          // 객체를 JSON 문자열로 변환하여 localStorage에 저장
+          localStorage.setItem('user', JSON.stringify(userDataForContext));
+
           login(userDataForContext); // useAuth 훅의 login 함수 호출
           navigate('/'); // 로그인 상태이면 메인 페이지로 리다이렉트
         } else {
@@ -48,7 +58,7 @@ const SignIn = () => {
   };
 
   const isFieldsNotEmpty = () => {
-    return id.trim() !== '' && pw.trim() !== '';
+    return email.trim() !== '' && pw.trim() !== '';
   };
 
   return (
@@ -73,13 +83,13 @@ const SignIn = () => {
             letterSpacing: "2.4px"}}>로그인</p>
           <div id={styles.idBox}style={{ marginTop: '40px', marginBottom: '20px' }}>
             <p>이메일</p>
-            <input type='text' placeholder='이메일을 입력하세요' value={id} onChange={(e) => setId(e.target.value)}></input>
+            <input type='text' placeholder='이메일을 입력하세요' value={email} onChange={(e) => setEmail(e.target.value)}></input>
           </div>
           <div id={styles.pwBox} style={{ marginBottom: '50px' }}>
             <p>비밀번호</p>
             <input type='password' placeholder='비밀번호를 입력하세요' value={pw} onChange={(e) => setPassword(e.target.value)} ></input>
           </div>
-          <button id={styles.signInBtn} onClick={handleLogin} style={{ backgroundColor: isFieldsNotEmpty() ? '#17181A' : '#FFFFFF' , color: isFieldsNotEmpty() ? '#FFFFFF' : '#95969D'}} 
+          <button id={styles.signInBtn} onClick={handleLoginClick} style={{ backgroundColor: isFieldsNotEmpty() ? '#17181A' : '#FFFFFF' , color: isFieldsNotEmpty() ? '#FFFFFF' : '#95969D'}} 
             disabled={!isFieldsNotEmpty()}>로그인 하기</button>
         </div>
       </div>

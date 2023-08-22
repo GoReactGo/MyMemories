@@ -1,9 +1,9 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -19,10 +19,11 @@ const firebaseConfig = {
   measurementId: "G-NR9ZR76DXD"
 };
 
-// Initialize Firebase
+// 파이어베이스 초기화
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
+// 파이어베이스 서비스 사용
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);

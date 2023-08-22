@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './calendar.module.css';
 import InviteModal from './InviteModal';
 import CustomModal from './customModal';
+import PictureModal from './pictureModal';
 import axios from 'axios';
 import Sunny from '../../assets/weatherimg/Sunny.png';
 import Cloudy from '../../assets/weatherimg/Cloudy.png';
@@ -34,8 +35,64 @@ const Calendar = () => {
       getWeather();
     }, []);
 
-    const { user, logout } = useAuth(); // 로그인된 사용자 정보와 logout 함수 불러오기 위함
-    console.log('User:', user);
+    const { user: authUser, logout } = useAuth(); // 로그인된 사용자 정보와 logout 함수 불러오기 위함
+    console.log('User:', authUser);
+
+    // localStorage에서 저장된 JSON 문자열을 가져옴
+    const storedUser = localStorage.getItem('user');
+
+    let user = null;
+
+    if (authUser) {
+      // authUser가 있는 경우 authUser를 사용
+      user = authUser;
+    } else {
+      // authUser가 없는 경우 로컬 스토리지에서 가져온 정보를 사용
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        user = JSON.parse(storedUser);
+      } else {
+        console.log('사용자 정보가 없습니다.');
+        // 사용자 정보가 없는 경우에는 기본 값을 사용하거나 다른 처리를 수행할 수 있습니다.
+      }
+    }
+  
+    // user 변수를 사용하여 사용자 정보를 활용할 수 있습니다.
+    if (user && user.name) {
+      console.log('이름:', user.name);
+    }
+    if (user && user.email) {
+      console.log('이메일:', user.email);
+    }
+    if (user && user.imageUrl) {
+      console.log('이미지 URL:', user.imageUrl);
+    }
+    
+    // 사용자 정보 저장
+    const saveUserInfoToSessionStorage = (userInfo) => {
+      sessionStorage.setItem('user', JSON.stringify(userInfo));
+    }
+
+    // 사용자 정보 가져오기
+    const getUserInfoFromSessionStorage = () => {
+      const userInfo = sessionStorage.getItem('user');
+      return userInfo ? JSON.parse(userInfo) : null;
+    }
+
+    // 사용자 정보 저장 예시
+    const userInfo = {
+      name: user.name,
+      email: user.email,
+      imageUrl: user.imageUrl,
+    };
+
+    saveUserInfoToSessionStorage(userInfo);
+
+    // 사용자 정보 가져오기 예시
+    const loadedUserInfo = getUserInfoFromSessionStorage();
+    console.log('Loaded User Info:', loadedUserInfo);
+
+
 
     const navigate = useNavigate();
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -60,10 +117,21 @@ const Calendar = () => {
       setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
     }; //다음달로 가는 버튼
 
-    // 친구 초대 & 커스텀 모달
+    // 사진 추가 & 친구 초대 & 커스텀 모달
+    const [pictureModalIsOpen, setPictureModalIsOpen] = useState(false);
     const [inviteModalIsOpen, setInviteModalIsOpen] = useState(false);
     const [customModalIsOpen, setCustomModalIsOpen] = useState(false);
     const [isButtonHighlighted, setIsButtonHighlighted] = useState(false); // 버튼 하이라이트 상태
+
+    const openPictureModal = () => {
+        setPictureModalIsOpen(true);
+        setIsButtonHighlighted(true); 
+    };
+
+    const closePictureModal = () => {
+        setPictureModalIsOpen(false);
+        setIsButtonHighlighted(false);
+    };
 
     const openInviteModal = () => {
         setInviteModalIsOpen(true);
@@ -145,6 +213,7 @@ const Calendar = () => {
         await logout(); // 로그아웃 실행
         handleColorSelect(''); // 배경색 초기화
         document.body.style.backgroundColor = ''; // 전체 화면 배경 초기화
+        localStorage.removeItem('user'); // 로그아웃 시 로컬 스토리지에서 사용자 정보 제거
         navigate('/signIn');
         return null;
       } catch (error) {
@@ -264,7 +333,7 @@ const Calendar = () => {
           <button onClick={handleNextMonth}><h1>&gt;</h1></button>
         </div>
       <div className={styles.optionBox}>
-        <button className={styles.option}>사진추가</button>
+        <button className={isButtonHighlighted ? 'highlightedButton' : 'option'} onClick={openPictureModal}>사진추가</button>
         <button className={isButtonHighlighted ? 'highlightedButton' : 'option'} onClick={openInviteModal}>
           친구 ID 추가
         </button>
@@ -272,6 +341,9 @@ const Calendar = () => {
           커스텀
         </button>
       </div>
+      {pictureModalIsOpen && (
+        <PictureModal isOpen={pictureModalIsOpen} closeModal={closePictureModal} />
+      )}
       {inviteModalIsOpen && (
         <InviteModal isOpen={inviteModalIsOpen} closeModal={closeInviteModal} />
       )}

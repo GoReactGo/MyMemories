@@ -62,6 +62,17 @@ export const AuthProvider = ({ children }) => {
 
   const value = { user, login, logout };
 
+  // 사용자 상태 변화 감지
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // 사용자가 로그인한 경우: 세션 상태 저장
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      // 사용자가 로그아웃한 경우: 세션 상태 제거
+      localStorage.removeItem('user');
+    }
+  });
+
   return (
     <AuthContext.Provider value={value}>
       {!loading && children}

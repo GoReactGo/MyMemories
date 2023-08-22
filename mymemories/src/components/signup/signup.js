@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth, db, storage, doc, setDoc, getDoc } from '../../firebase'; // Import Firebase settings
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import styles from './signupStyle.module.css';
@@ -16,19 +16,30 @@ const SignUp = () => {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
+  // 이미지를 업로드하고 이미지 URL을 반환하는 함수
+  const uploadImage = async (selectedImage) => {
+    try {
+      const storageRef = ref(storage, 'images/' + selectedImage.name);
+      await uploadBytes(storageRef, selectedImage);
+    
+      const imageUrl = await getDownloadURL(storageRef);
+      return imageUrl; // 이미지 URL을 반환
+    } catch (error) {
+      console.error('이미지 업로드 에러:', error);
+      throw error; // 오류를 다시 throw하여 상위 함수에서 처리할 수 있게 합니다.
+    }
+  };
+
+  // 파일 선택 시 호출되는 함수
   const handleImageChange = async (e) => {
     const selectedImage = e.target.files[0];
     if (selectedImage) {
       try {
-        const storageRef = ref(storage, 'images/' + selectedImage.name);
-        await uploadBytes(storageRef, selectedImage);
-
-        const imageUrl = await getDownloadURL(storageRef);
+        const imageUrl = await uploadImage(selectedImage); // 이미지 업로드 함수 호출
 
         setSelectedImage(imageUrl);
         setImageUrl(imageUrl);
         console.log('이미지 URL:', imageUrl); // 이미지 URL을 콘솔에 출력
-        
       } catch (error) {
         console.error('이미지 업로드 에러:', error);
       }
@@ -40,39 +51,64 @@ const SignUp = () => {
     fileInputRef.current.click();
   };
 
+  const saveUserDataClick = () => {
+    saveUserData(name, email, pw, image);
+  };
+
   const [name, setName] = useState('');
-  const [id, setId] = useState('');
+  const [email, setEmail] = useState('');
   const [pw, setPassword] = useState('');
   const [image, setImage] = useState(null);
   const [imageUrl, setImageUrl] = useState('');
+  const [errorMsg, setErrorMsg] = useState(" ");
 
-  const saveUserData = async () => {
+  const saveUserData = async (name, email, pw, image) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, id, pw);
+      setErrorMsg(' ');
+      // Firebase Authentication을 사용하여 사용자 생성
+      const userCredential = await createUserWithEmailAndPassword(auth, email, pw);
       const user = userCredential.user;
-      const userDocRef = doc(db, 'user', id);
+      // const imageUrl = await uploadImage(image);
+
+      // 이름, 프로필 이미지 업데이트
+      await updateProfile(user, {
+        displayName: name,
+        photoURL: image // 프로필 이미지 URL
+      });
+
+      // Firestore에 사용자 정보 저장
+      const userDocRef = doc(db, 'user', email);
+
       await setDoc(userDocRef, {
         name: name,
-        id: id,
+        id: email,
         imageUrl: imageUrl,
         pw: pw,
       });
       console.log('회원가입 성공:', user);
-      navigate('/');
+      navigate('/signIn');
+      return user;
     } catch (error) {
+      if (error.code === 'auth/weak-password') {
+        setErrorMsg('비밀번호는 6자리 이상이어야 합니다');
+      } else if (error.code === 'auth/invalid-email') {
+        setErrorMsg('잘못된 이메일 주소입니다');
+      } else if (error.code === 'auth/email-already-in-use') {
+        setErrorMsg('이미 가입되어 있는 계정입니다');
+      }
       console.error('회원가입 에러:', error);
     }
   };
 
-  const [isIdAvailable, setIsIdAvailable] = useState(false);
-  const [isExistingId, setIsExistingId] = useState(false);
+  const [isEmailAvailable, setIsEmailAvailable] = useState(false);
+  const [isExistingEmail, setIsExistingEmail] = useState(false);
 
-  const checkIdAvailability = async () => {
-    // user 컬렉션에서 아이디가 존재하는지 확인하는 로직
-    const userDocRef = doc(db, 'user', id);
+  const checkEmailAvailability = async () => {
+    // user 컬렉션에서 이메일이 존재하는지 확인하는 로직
+    const userDocRef = doc(db, 'user', email);
     const userDocSnapshot = await getDoc(userDocRef);
-    setIsIdAvailable(!userDocSnapshot.exists());
-    setIsExistingId(userDocSnapshot.exists());
+    setIsEmailAvailable(!userDocSnapshot.exists());
+    setIsExistingEmail(userDocSnapshot.exists());
   };
 
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -91,7 +127,7 @@ const SignUp = () => {
   };
 
   const getButtonStyle = () => {
-    if (isPasswordMatch && isIdAvailable && name !== '') {
+    if (isPasswordMatch && isEmailAvailable && name !== '') {
       return {
         backgroundColor: '#17181A', // 버튼이 활성화된 경우의 배경색
         color: '#FFFFFF', // 버튼 텍스트 색상
@@ -156,37 +192,37 @@ const SignUp = () => {
             <input
               type='text'
               placeholder='이메일을 입력하세요'
-              value={id}
+              value={email}
               onChange={(e) => {
-                const newId = e.target.value;
-                setId(newId);
-                setIsIdAvailable(false); // 아이디 입력이 변경되면 사용 가능 상태 초기화
+                const newEmail = e.target.value;
+                setEmail(newEmail);
+                setIsEmailAvailable(false); // 아이디 입력이 변경되면 사용 가능 상태 초기화
               }}
               onBlur={() => {
-                if (id.trim() !== '') {
-                  checkIdAvailability();
+                if (email.trim() !== '') {
+                  checkEmailAvailability();
                 } else {
                   // id가 비어있는 경우 사용 불가능한 아이디로 처리
-                  setIsIdAvailable(false);
+                  setIsEmailAvailable(false);
                 }
               }}
             />
-            {isIdAvailable ? (
+            {isEmailAvailable ? (
               <div className={styles.check}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 20 20" fill="none">
-                  <circle cx="10" cy="10" r="10" fill="#1FB1F0" /> {/* 아이디 사용 가능 색깔 */}
+                  <circle cx="10" cy="10" r="10" fill="#1FB1F0" /> {/* 이메일 사용 가능 색깔 */}
                   <path d="M7.81818 12.3284L4.95455 9.8209L4 10.6567L7.81818 14L16 6.83582L15.0455 6L7.81818 12.3284Z" fill="#F6F7FB" />
                 </svg>
-                <p style={{ color: '#1FB1F0' }}>사용 가능한 이메일입니다.</p> {/* 아이디 사용 가능 문구 */}
+                <p style={{ color: '#1FB1F0' }}>사용 가능한 이메일입니다.</p> {/* 이메일 사용 가능 문구 */}
               </div>
             ) : 
-            isExistingId ? (
+            isExistingEmail ? (
               <div className={styles.check}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 20 20" fill="none">
-                  <circle cx="10" cy="10" r="10" fill="red" /> {/* 아이디 사용 가능 색깔 */}
+                  <circle cx="10" cy="10" r="10" fill="red" /> {/* 이메일 사용 가능 색깔 */}
                   <path d="M7.81818 12.3284L4.95455 9.8209L4 10.6567L7.81818 14L16 6.83582L15.0455 6L7.81818 12.3284Z" fill="#F6F7FB" />
                 </svg>
-                <p style={{ color: 'red' }}>사용 불가능한 이메일입니다.</p> {/* 아이디 사용 가능 문구 */}
+                <p style={{ color: 'red' }}>사용 불가능한 이메일입니다.</p> {/* 이메일 사용 가능 문구 */}
               </div>
             ) :
             null
@@ -221,7 +257,7 @@ const SignUp = () => {
               </div>
             )}
           </div>
-          <button onClick={saveUserData} id={styles.signInBtn} style={getButtonStyle()} >회원가입 하기</button>
+          <button onClick={saveUserDataClick} id={styles.signInBtn} style={getButtonStyle()} >회원가입 하기</button>
         </div>
       </div>
     </div>
